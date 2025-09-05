@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Motion Alert</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  </head>
+  <body>
+    <h1>Motion Detected!</h1>
+    <audio
+      id="alertSound"
+      src="welcome.mp3"
+      preload="auto"
+    ></audio>
+
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyBwUuD-fJE9PYk2vhtvgS4OkpSBfbnhkv8",
+        authDomain: "welcome-robo.firebaseapp.com",
+        databaseURL:
+          "https://welcome-robo-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "welcome-robo",
+        storageBucket: "welcome-robo.firebasestorage.app",
+        messagingSenderId: "628603618372",
+        appId: "1:628603618372:web:547074854384147d222811",
+        measurementId: "G-LDPR4MEN74",
+      };
+
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.database();
+      const motionRef = db.ref("motionCount");
+
+      motionRef.on("child_added", (snapshot) => {
+        console.log("New motion detected!");
+        document.getElementById("alertSound").play();
+      });
+    </script>
+  </body>
+</html>
