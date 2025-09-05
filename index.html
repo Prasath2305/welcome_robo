@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Motion Alert</title>
+    <link rel="manifest" href="/manifest.json" />
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 </head>
@@ -28,30 +30,46 @@
         const motionRef = db.ref("motionCount");
         const audio = document.getElementById("alertSound");
 
+        let audioContext;
         let audioEnabled = false;
 
-        // Unlock audio on button click
-        document.getElementById("enableAudio").addEventListener("click", () => {
+        document.getElementById("enableAudio").addEventListener("click", async () => {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            if (audioContext.state === 'suspended') {
+                await audioContext.resume();
+            }
+
             audio.play().then(() => {
                 audioEnabled = true;
-                console.log("Audio unlocked.");
-                document.getElementById("enableAudio").style.display = "none";
+                console.log("Audio fully unlocked.");
+                document.getElementById("enableAudio").style.display = 'none';
             }).catch(err => {
-                console.error("Audio unlock failed:", err);
+                console.error("Audio play failed:", err);
             });
         });
 
-        // When motion is detected
         motionRef.on("child_added", (snapshot) => {
             console.log("New motion detected!");
-
             if (audioEnabled) {
+                audio.pause();
                 audio.currentTime = 0;
+                audio.load();
                 audio.play().catch(e => console.error("Playback failed:", e));
             } else {
-                console.warn("Audio not enabled yet. Click the button first.");
+                console.warn("Audio not enabled yet.");
             }
         });
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').then(reg => {
+                console.log('Service Worker registered!', reg);
+            }).catch(err => {
+                console.error('SW registration failed:', err);
+            });
+        }
     </script>
 </body>
 </html>
